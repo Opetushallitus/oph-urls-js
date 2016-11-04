@@ -139,6 +139,7 @@
         return ret
     }
 
+    exportDest.urls.version = version
     exportDest.urls.properties = {}
     exportDest.urls.defaults = {}
     exportDest.urls.override = {}
