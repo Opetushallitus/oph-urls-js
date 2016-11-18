@@ -15,18 +15,18 @@
  * * for main url window.url's first parameter: "service.info" from all configs
  * * baseUrl: "service.baseUrl" from all configs and "baseUrl" from all configs
  *
- * window.url_properties = {
+ * window.urls.addProperties( {
  *   "service.status": "/rest/status",
  *   "service.payment": "/rest/payment/$1",
  *   "service.order": "/rest/payment/$orderId"
- *   }
+ *   })
  *
  * window.urls.debug = true
  *
  */
 
 (function(exportDest) {
-    var version="1.0"
+    var version="1.1"
 
     if(exportDest.urls) {
         if(exportDest.urls.version !== version)   {
@@ -154,7 +154,7 @@
     exportDest.urls.addDefaults = function (props) {
         mergePropertiesWithWarning(props, exportDest.urls.defaults)
     }
-    exportDest.urls.addOverride = function (props) {
+    exportDest.urls.addOverrides = function (props) {
         mergePropertiesWithWarning(props, exportDest.urls.override)
     }
     function mergePropertiesWithWarning(props, destProps) {

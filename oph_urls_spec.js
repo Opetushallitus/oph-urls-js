@@ -123,7 +123,7 @@ describe('oph_urls.js', function() {
 
     it("addProperties, addOverride, addDefaults work", function() {
         ctx.urls.addDefaults({a:1})
-        ctx.urls.addOverride({b:1})
+        ctx.urls.addOverrides({b:1})
         ctx.urls.addProperties({c:1})
         ctx.urls.addDefaults({d:2})
         assert.deepEqual(ctx.urls.defaults, {a:1, d:2});

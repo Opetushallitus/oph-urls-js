@@ -51,4 +51,4 @@ import 'oph-urls-js'  // functions (urls, url, etc.) attached to window
         angular.bootstrap(document, ['myApp'])
       })
     })
-    window.url("organisaatio-service.soap")
+    window.url("organisaatio-service.soap")tus/o
