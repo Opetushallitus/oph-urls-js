@@ -223,7 +223,7 @@
         var args = Array.prototype.slice.call(arguments)
         var jsonProperties = []
         successCBs.push(function(){
-            jsonProperties.forEach(function(json){merge(exportDest.urls.properties, json)})
+            jsonProperties.forEach(function(json){exportDest.urls.addProperties(json)})
         })
         fulfillCountDest += args.length
         args.forEach(function(url, index){
