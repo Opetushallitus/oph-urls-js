@@ -3,16 +3,14 @@ var assert = require('assert');
 describe('oph_urls.js', function() {
     var ctx = require("./oph_urls.js")
     beforeEach(function() {
-        ctx.urls.properties = {}
-        ctx.urls.defaults = {
-        }
-        ctx.urls.override = {}
+        ctx.urls.scopes = {}
+        ctx.urls() // re-initialize
     });
 
     it('resolve url and throw error on unknown', function () {
-        ctx.urls.properties = {
+        ctx.urls.addProperties({
             "a.b": "1"
-        }
+        })
 
         assert.equal(ctx.url("a.b"), "1");
 
@@ -25,35 +23,30 @@ describe('oph_urls.js', function() {
     });
 
     it('handle baseUrl', function () {
-        ctx.urls.properties = {
+        ctx.urls.addProperties ( {
             "a.a": "1",
             "b.b": "2",
             "c.c": "3",
             "a.baseUrl": "http://pow",
             "baseUrl": "http://bar"
-        }
+        })
 
         assert.equal(ctx.url("a.a"), "http://pow/1");
         assert.equal(ctx.url("b.b"), "http://bar/2");
 
         // ctx.urls.override overrides baseUrl
-        ctx.urls.override = {
+        ctx.urls.addOverrides( {
             "baseUrl": "http://foo"
-        }
+        })
         assert.equal(ctx.url("a.a"), "http://pow/1");
         assert.equal(ctx.url("b.b"), "http://foo/2");
-
-        // window.urls() overrides baseUrl and ctx.urls.override
-        var ctx2 = ctx.urls({"baseUrl": "http://zap"});
-        assert.equal(ctx2.url("a.a"), "http://pow/1");
-        assert.equal(ctx2.url("b.b"), "http://zap/2");
     });
 
     it('parameter replace', function () {
-        ctx.urls.properties = {
+        ctx.urls.addProperties({
             "a.a": "/a/$1",
             "b.b": "/b/$param"
-        }
+        })
 
         assert.equal(ctx.url("a.a"), "/a/$1");
         assert.equal(ctx.url("a.a",1), "/a/1");
@@ -70,10 +63,10 @@ describe('oph_urls.js', function() {
     });
 
     it('parameter encode', function () {
-        ctx.urls.properties = {
+        ctx.urls.addProperties({
             "a.a": "/a/$1",
             "b.b": "/b/$param"
-        }
+        })
         assert.equal(ctx.url("a.a","1:"), "/a/1%3A");
         assert.equal(ctx.url("b.b", {
             param: "pow:"
@@ -84,6 +77,7 @@ describe('oph_urls.js', function() {
             "query Parameter2": "1:23"
         }), "/b/pow?query%20Parameter=1%3A23&query%20Parameter2=1%3A23");
         var ctx2 = ctx.urls().noEncode()
+        assert.equal(ctx.url("a.a","1:"), "/a/1%3A");
         assert.equal(ctx2.url("a.a","1:"), "/a/1:");
         assert.equal(ctx2.url("b.b", {
             param: "pow:"
@@ -100,34 +94,32 @@ describe('oph_urls.js', function() {
     });
 
     it('parameter and url lookup order', function() {
-        ctx.urls.defaults["a.a"] = "b"
+        ctx.urls.addDefaults({"a.a": "b"})
         assert.equal(ctx.url("a.a"), "b");
 
-        ctx.urls.properties = {"a.a": "c"}
+        ctx.urls.addProperties({"a.a": "c"})
         assert.equal(ctx.url("a.a"), "c");
 
-        ctx.urls.override["a.a"] = "d"
+        ctx.urls.addOverrides({"a.a":"d"})
         assert.equal(ctx.url("a.a"), "d");
-
-        var ctx2 = ctx.urls({"a.a": "e"});
-        assert.equal(ctx2.url("a.a"), "e");
     })
 
     it("should omit empty values", function() {
-        ctx.urls.defaults["a.a"] = "b"
+        ctx.urls.addDefaults({"a.a": "b"})
         assert.equal(ctx.url("a.a"), "b");
         assert.equal(ctx.url("a.a",{}), "b");
-        assert.equal(ctx.url("a.a",{a: "", b: null, c:undefined, d:1}), "b?a=&b=&d=1");
+        assert.equal(ctx.url("a.a",{a: "", b: null, c:undefined, d:1}), "b?a=&d=1");
         assert.equal(ctx.urls().omitEmptyValuesFromQuerystring().url("a.a",{a: "", b: null, c:undefined, d:1}), "b?d=1");
     })
 
-    it("addProperties, addOverride, addDefaults work", function() {
-        ctx.urls.addDefaults({a:1})
-        ctx.urls.addOverrides({b:1})
-        ctx.urls.addProperties({c:1})
-        ctx.urls.addDefaults({d:2})
-        assert.deepEqual(ctx.urls.defaults, {a:1, d:2});
-        assert.deepEqual(ctx.urls.override, {b:1});
-        assert.deepEqual(ctx.urls.properties, {c:1});
+    it("should support url scopes", function() {
+        ctx.urls.addDefaults({"a.a": "b"})
+        ctx.urls().addProperties({"a.c": "d"})
+        ctx.urls("test").addDefaults({"a.a": "e"})
+        ctx.urls("test").addOverrides({"a.b": "f"})
+        assert.equal(ctx.url("a.a"), "b");
+        assert.equal(ctx.url("a.c"), "d");
+        assert.equal(ctx.urls("test").url("a.a"), "e");
+        assert.equal(ctx.urls("test").url("a.b"), "f");
     })
 });
