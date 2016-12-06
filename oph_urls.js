@@ -190,6 +190,9 @@
                 }
             }
             var p = promise()
+            overridesUrls = flatten(overridesUrls)
+            propertiesUrls = flatten(propertiesUrls)
+            defaultsUrls = flatten(defaultsUrls)
 
             // wait until all GETs complete and process jsons or reject
             var counterP = counterPromise(overridesUrls.length + propertiesUrls.length + defaultsUrls.length, function(){
@@ -292,6 +295,7 @@
             },
             reject: function(fail) {
                 failReason = fail
+                failed = true
                 complete()
             },
             then: function(onFulfill, onReject) {
@@ -314,9 +318,10 @@
         var fails = [];
 
         function complete() {
-            if(maxCount < count) {
+            if(count < maxCount) {
                 count = count + 1
             }
+            console.log("counterPromise.complete()", maxCount, count, fails)
             if(maxCount === count) {
                 if(fails.length > 0) {
                     onReject(fails)
@@ -337,7 +342,7 @@
     }
 
     function loadUrls(urls, promise) {
-        return flatten(urls).map(function (url) {
+        return urls.map(function (url) {
             var ret = {url: url};
             ajaxJson("GET", url, function (data) {
                 ret.json = data
@@ -395,7 +400,7 @@
         }
         if (Array.isArray(item)) {
             item.forEach(function (i) {
-                util.flatten(i, dest)
+                flatten(i, dest)
             })
         } else {
             dest.push(item)

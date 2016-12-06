@@ -2,5 +2,14 @@
 <head>
     <script src="oph_urls.js"></script>
 </head>
+<script>
+    window.urls.load("test.json", {overrides: ["test_overrides.json2"]}).then(
+        function() {
+            console.log("properties loaded ok")
+        }, function (err) {
+            console.log("error loading properties", err)
+        }
+    )
+</script>
 <body>Test page for oph_urls.js</body>
 </html>
