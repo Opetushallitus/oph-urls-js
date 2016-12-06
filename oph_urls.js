@@ -321,7 +321,6 @@
             if(count < maxCount) {
                 count = count + 1
             }
-            console.log("counterPromise.complete()", maxCount, count, fails)
             if(maxCount === count) {
                 if(fails.length > 0) {
                     onReject(fails)
