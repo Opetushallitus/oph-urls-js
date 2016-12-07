@@ -3,7 +3,7 @@
     <script src="oph_urls.js"></script>
 </head>
 <script>
-    window.urls.load("test.json", {overrides: ["test_overrides.json2"]}).then(
+    window.urls.debugLog().load("test.json", {overrides: ["test_overrides.json2"]}).then(
         function() {
             console.log("properties loaded ok")
         }, function (err) {

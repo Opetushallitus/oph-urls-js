@@ -147,7 +147,7 @@
                 url = joinUrl(baseUrl, url)
             }
             url = url + queryString
-            debug("url:", key, "->", url)
+            debug("url:", key, "->", url, "scope:", scopeConfig.name)
             return url
         }
 
@@ -194,8 +194,10 @@
             propertiesUrls = flatten(propertiesUrls)
             defaultsUrls = flatten(defaultsUrls)
 
+            var maxCount = overridesUrls.length + propertiesUrls.length + defaultsUrls.length;
+            debug("loading " + maxCount + " json files. scope:", scopeConfig.name)
             // wait until all GETs complete and process jsons or reject
-            var counterP = counterPromise(overridesUrls.length + propertiesUrls.length + defaultsUrls.length, function(){
+            var counterP = counterPromise(maxCount, function(){
                 overridesUrls.forEach(function(urlJson){
                     merge(urlJson.json, scopeConfig.overrides)
                 })
@@ -205,8 +207,12 @@
                 defaultsUrls.forEach(function(urlJson){
                     mergePropertiesWithWarning(urlJson.json, scopeConfig.defaults)
                 })
+                debug("loaded " + maxCount + " files successfully. scope:", scopeConfig.name)
                 p.fulfill()
-            }, p.reject)
+            }, function(err) {
+                log("failed to load json files. scope:", scopeConfig.name, err)
+                p.reject(err)
+            })
             overridesUrls = loadUrls(overridesUrls, counterP)
             propertiesUrls = loadUrls(propertiesUrls, counterP)
             defaultsUrls = loadUrls(defaultsUrls, counterP)
@@ -222,7 +228,9 @@
             conf.omitEmptyValuesFromQuerystring = scopeConfig.omitEmptyValuesFromQuerystring
             conf.encode = scopeConfig.encode
             return newScope;
-        };
+        }
+
+        debug("created scope:", scopeConfig.name)
         return ret
     }
 
@@ -233,16 +241,22 @@
         if(existsAlready.length == 0) {
             merge(props, destProps)
         } else {
-            console.log("Properties already contains following keys:", existsAlready, "existing properties:", destProps, "new properties:", props)
+            log("Properties already contains following keys:", existsAlready, "existing properties:", destProps, "new properties:", props)
             alert("Url properties conflict. Check console log")
         }
     }
 
-    function debug() {
+    function log() {
         var args = Array.prototype.slice.call(arguments)
         args.unshift("OphProperties")
-        if(exportDest.urls.debug && exportDest.console && exportDest.console.log) {
+        if(exportDest.console && exportDest.console.log) {
             exportDest.console.log.apply(exportDest.console, args)
+        }
+    }
+
+    function debug() {
+        if(exportDest.urls.debug) {
+           log.apply(exportDest.console, arguments)
         }
     }
 
