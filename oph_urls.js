@@ -28,7 +28,7 @@
 
     if(exportDest.urls) {
         if(exportDest.urls.version !== version)   {
-            console.log("'Mismatching oph_urls.js. First loaded (and in use):", exportDest.urls.version, " second loaded (not in use): ", version)
+            logError("'Mismatching oph_urls.js. First loaded (and in use):", exportDest.urls.version, " second loaded (not in use): ", version)
         }
         return
     }
@@ -210,7 +210,7 @@
                 debug("loaded " + maxCount + " files successfully. scope:", scopeConfig.name)
                 p.fulfill()
             }, function(err) {
-                log("failed to load json files. scope:", scopeConfig.name, err)
+                logError("failed to load json files. scope:", scopeConfig.name, err)
                 p.reject(err)
             })
             overridesUrls = loadUrls(overridesUrls, counterP)
@@ -241,23 +241,30 @@
         if(existsAlready.length == 0) {
             merge(props, destProps)
         } else {
-            log("Properties already contains following keys:", existsAlready, "existing properties:", destProps, "new properties:", props)
+            logError("Properties already contains following keys:", existsAlready, "existing properties:", destProps, "new properties:", props)
             alert("Url properties conflict. Check console log")
         }
     }
 
-    function log() {
-        var args = Array.prototype.slice.call(arguments)
+    function log(logType, args) {
+        var args = Array.prototype.slice.call(args)
         args.unshift("OphProperties")
-        if(exportDest.console && exportDest.console.log) {
-            exportDest.console.log.apply(exportDest.console, args)
+        if(exportDest.console) {
+            var logFn = exportDest.console[logType] || exportDest.console.log
+            if(logFn) {
+                logFn.apply(exportDest.console, args)
+            }
         }
     }
 
     function debug() {
         if(exportDest.urls.debug) {
-           log.apply(exportDest.console, arguments)
+            log("log", arguments)
         }
+    }
+
+    function logError() {
+        log("error", arguments)
     }
 
     function ajaxJson(method, url, onload, onerror) {
