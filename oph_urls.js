@@ -23,45 +23,63 @@
  *
  */
 
-(function(exportDest) {
+(function() {
     var version="2.0"
 
-    if(exportDest.urls) {
-        if(exportDest.urls.version !== version)   {
-            logError("'Mismatching oph_urls.js. First loaded (and in use):", exportDest.urls.version, " second loaded (not in use): ", version)
+    var exportDests = []
+
+    function addExportDest(exportDest, urlsFN) {
+        if(exportDest.urls) {
+            if(exportDest.urls.version !== version)   {
+                logError("'Mismatching oph_urls.js. First loaded (and in use):", exportDest.urls.version, " second loaded (not in use): ", version, ". Export destination is ", exportDest)
+            }
+            return
         }
-        return
+        exportDests.push(exportDest)
+        exportDest.urls = urlsFN
     }
 
-    exportDest.urls = function(scopeName) {
+    var urlsFN = function(scopeName) {
         if(!scopeName) {
             scopeName="default"
         }
-        if(!exportDest.urls.scopes[scopeName]) {
+        if(!urlsFN.scopes[scopeName]) {
             var scope = createScope(scopeName);
-            exportDest.urls.scopes[scopeName] = scope
+            urlsFN.scopes[scopeName] = scope
             if(scopeName == "default") {
-                // link default scope's functions to exportDest and exportDest.urls
-                exportDest.url = scope.url
-                exportDest.urls.url = scope.url
-                exportDest.urls.omitEmptyValuesFromQuerystring = scope.omitEmptyValuesFromQuerystring
-                exportDest.urls.noEncode = scope.noEncode
-                exportDest.urls.addOverrides = scope.addOverrides
-                exportDest.urls.addProperties = scope.addProperties
-                exportDest.urls.addDefaults = scope.addDefaults
-                exportDest.urls.load = scope.load
+                // link default scope's functions directly under urlsFN and export url() function to all scopes
+                exportDests.forEach(function (exportDest) {
+                    exportDest.url = scope.url
+                })
+                urlsFN.url = scope.url
+                urlsFN.omitEmptyValuesFromQuerystring = scope.omitEmptyValuesFromQuerystring
+                urlsFN.noEncode = scope.noEncode
+                urlsFN.addOverrides = scope.addOverrides
+                urlsFN.addProperties = scope.addProperties
+                urlsFN.addDefaults = scope.addDefaults
+                urlsFN.load = scope.load
             }
         }
-        return exportDest.urls.scopes[scopeName]
+        return urlsFN.scopes[scopeName]
     }
-    exportDest.urls.scopes = {}
-    exportDest.urls.version = version
-    exportDest.urls.debug = false
-    exportDest.urls.debugLog = function() {
-        exportDest.urls.debug = true;
-        return exportDest.urls;
+    urlsFN.scopes = {}
+    urlsFN.version = version
+    urlsFN.debug = false
+    urlsFN.debugLog = function() {
+        urlsFN.debug = true;
+        return urlsFN;
     }
-    exportDest.urls() // initialize default scope and its functions
+
+    // bind to window.urls and module.export.urls
+    if(typeof window !== 'undefined') {
+        addExportDest(window, urlsFN)
+    }
+    if(typeof module !== 'undefined' && module.exports) {
+        addExportDest(module.exports, urlsFN)
+    }
+
+    // initialize default scope and its functions
+    urlsFN()
 
     // scope has isolated properties and configs
     function createScope(name) {
@@ -249,16 +267,16 @@
     function log(logType, args) {
         var args = Array.prototype.slice.call(args)
         args.unshift("OphProperties")
-        if(exportDest.console) {
-            var logFn = exportDest.console[logType] || exportDest.console.log
+        if(console) {
+            var logFn = console[logType] || console.log
             if(logFn) {
-                logFn.apply(exportDest.console, args)
+                logFn.apply(console, args)
             }
         }
     }
 
     function debug() {
-        if(exportDest.urls.debug) {
+        if(urlsFN.debug) {
             log("log", arguments)
         }
     }
@@ -266,6 +284,12 @@
     function logError() {
         log("error", arguments)
     }
+
+    function parseService (key) {
+        return key.substring(0, key.indexOf("."))
+    }
+
+    // ajax loading
 
     function ajaxJson(method, url, onload, onerror) {
         var oReq = new XMLHttpRequest();
@@ -372,14 +396,12 @@
         });
     }
 
+    // helper functions
+
     function merge(from, dest) {
         Object.keys(from).forEach(function(key){
             dest[key]=from[key];
         })
-    }
-
-    function parseService (key) {
-        return key.substring(0, key.indexOf("."))
     }
 
     function joinUrl() {
@@ -392,11 +414,11 @@
             if(!url) {
                 url = arg
             } else {
-                var endsWith = url.endsWith("/");
-                var startsWith = arg.startsWith("/");
-                if(endsWith && startsWith) {
+                var endsWithBool = endsWith(url, "/");
+                var startsWithBool = startsWith(url, "/");
+                if(endsWithBool && startsWithBool) {
                     url = url + arg.substring(1)
-                } else if(endsWith || startsWith) {
+                } else if(endsWithBool || startsWithBool) {
                     url = url + arg
                 } else {
                     url = url + "/" + arg
@@ -427,25 +449,20 @@
         }
         return dest
     }
-})(typeof window === 'undefined' ? module.exports : window);
 
-// polyfills for IE
-
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function(searchString, position){
+    function startsWith(txt, searchString, position){
         position = position || 0;
-        return this.substr(position, searchString.length) === searchString;
-    };
-}
+        return txt.substr(position, searchString.length) === searchString;
+    }
 
-if (!String.prototype.endsWith) {
-    String.prototype.endsWith = function(searchString, position) {
-        var subjectString = this.toString();
+    function endsWith(txt, searchString, position) {
+        var subjectString = txt.toString();
         if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
             position = subjectString.length;
         }
         position -= searchString.length;
         var lastIndex = subjectString.indexOf(searchString, position);
         return lastIndex !== -1 && lastIndex === position;
-    };
-}
+    }
+
+})();
