@@ -60,6 +60,10 @@ describe('oph_urls.js', function() {
             queryParameter: "123",
             queryParameter2: "123"
         }), "/b/pow?queryParameter=123&queryParameter2=123");
+        // extra named parameters go to queryString
+        assert.equal(ctx.url("b.b", {
+            queryParameter: ["123","1234"]
+        }), "/b/$param?queryParameter=123&queryParameter=1234");
     });
 
     it('parameter encode', function () {

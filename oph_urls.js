@@ -130,7 +130,6 @@
             var key = Array.prototype.shift.apply(arguments)
             var args = Array.prototype.slice.call(arguments)
             var queryString = "";
-            var tmpUrl;
             if (!key) {
                 throw new Error("first parameter 'key' not defined!");
             }
@@ -141,6 +140,7 @@
                 if (typeof arg === "object") {
                     Object.keys(arg).forEach(function (k) {
                         var originalValue = arg[k];
+                        var tmpUrl = url;
                         if(!isArray(originalValue)) {
                             tmpUrl = url.replace("$" + k, encodeParameter(originalValue))
                         }
