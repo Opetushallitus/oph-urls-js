@@ -35,6 +35,16 @@ Add to _package.json_:
 ## ES6 projects
 ```javascript
 import 'oph-urls-js'  // functions (urls, url, etc.) attached to window
+import {urls} from 'oph-urls-js'  // use exported "urls" function/accessor in code 
+
+// all these produce the same result
+urls.url("service.key")
+urls().url("service.key")
+urls("default").url("service.key")
+window.url("pow")
+window.urls.url("pow")
+window.urls().url("pow")
+window.urls("default").url("pow")
 ```
 
 ## HTML
@@ -45,10 +55,9 @@ import 'oph-urls-js'  // functions (urls, url, etc.) attached to window
 
     // load properties from a static file and a rest resource which returns override properties
     // start application after resources are loaded
-    window.urls.loadFromUrls("suoritusrekisteri-web-frontend-url_properties.json", "rest/v1/properties").success(function() {
-      // bootstrap angular application manually after properties are loaded
-      angular.element(document).ready(function() {
-        angular.bootstrap(document, ['myApp'])
-      })
-    })
-    window.url("organisaatio-service.soap")tus/o
+      window.urls.load("test.json", {overrides: ["test_overrides.json"]}).then(function() {
+          // bootstrap angular application manually after properties are loaded
+          angular.element(document).ready(function() {
+            angular.bootstrap(document, ['myApp'])
+          })
+      }, function(error) {})
