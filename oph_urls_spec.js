@@ -27,12 +27,15 @@ describe('oph_urls.js', function() {
             "a.a": "1",
             "b.b": "2",
             "c.c": "3",
+            "d.d": "4",
             "a.baseUrl": "http://pow",
+            "d.baseUrl": "/",
             "baseUrl": "http://bar"
         })
 
         assert.equal(ctx.url("a.a"), "http://pow/1");
         assert.equal(ctx.url("b.b"), "http://bar/2");
+        assert.equal(ctx.url("d.d"), "/4");
 
         // ctx.urls.override overrides baseUrl
         ctx.urls.addOverrides( {
