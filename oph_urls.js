@@ -28,6 +28,9 @@
 
     var exportDests = []
 
+    var callerIdHeaderName = 'Caller-Id';
+    var callerIdHeaderValue = 'oph-urls-js';
+
     function addExportDest(exportDest, urlsFN) {
         if(exportDest.urls) {
             if(exportDest.urls.version !== version)   {
@@ -294,6 +297,7 @@
     function ajaxJson(method, url, onload, onerror) {
         var oReq = new XMLHttpRequest();
         oReq.open(method, url, true);
+        oReq.setRequestHeader(callerIdHeaderName, callerIdHeaderValue);
         oReq.onreadystatechange = function() {
             if (oReq.readyState == 4) {
                 if(oReq.status == 200) {
