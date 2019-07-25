@@ -296,7 +296,12 @@
     function ajaxJson(method, url, onload, onerror) {
         var callerIdHeaderValue = window.opintopolku_caller_id;
         if (!callerIdHeaderValue) {
-            console.error('oph-urls-js error: window.opintopolku-caller-id must be set!');
+          var msg = 'oph-urls-js error: window.opintopolku-caller-id must be set!';
+          console.error(msg);
+          if (onerror) {
+            onerror(msg)
+          }
+          return;
         }
 
         var oReq = new XMLHttpRequest();
