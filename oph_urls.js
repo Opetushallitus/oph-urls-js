@@ -24,7 +24,7 @@
  */
 
 (function() {
-    var version="2.1"
+    var version="2.2"
 
     var exportDests = []
 
