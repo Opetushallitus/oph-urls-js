@@ -29,7 +29,6 @@
     var exportDests = []
 
     var callerIdHeaderName = 'Caller-Id';
-    var callerIdHeaderValue = 'oph-urls-js';
 
     function addExportDest(exportDest, urlsFN) {
         if(exportDest.urls) {
@@ -295,6 +294,11 @@
     // ajax loading
 
     function ajaxJson(method, url, onload, onerror) {
+        var callerIdHeaderValue = window.opintopolku_caller_id;
+        if (!callerIdHeaderValue) {
+            console.error('oph-urls-js error: window.opintopolku-caller-id must be set!');
+        }
+
         var oReq = new XMLHttpRequest();
         oReq.open(method, url, true);
         oReq.setRequestHeader(callerIdHeaderName, callerIdHeaderValue);
