@@ -1,4 +1,6 @@
 var assert = require('assert');
+var nock = require('nock');
+global.XMLHttpRequest = require('xhr2');
 
 describe('oph_urls.js', function() {
     var ctx = require("./oph_urls.js")
@@ -128,5 +130,16 @@ describe('oph_urls.js', function() {
         assert.equal(ctx.url("a.c"), "d");
         assert.equal(ctx.urls("test").url("a.a"), "e");
         assert.equal(ctx.urls("test").url("a.b"), "f");
+    })
+
+    it("should set caller id, if provided", async function() {
+        var url = "http://foo.bar"
+        var callerId = 'Midnight Caller'
+        ctx.urls.addCallerId(callerId)
+        var scope = nock(url, {
+            reqheaders: { 'Caller-Id': callerId }
+        }).get('/').reply(200, { 'some': 'data' })
+        await ctx.urls.load(url)
+        scope.done()
     })
 });

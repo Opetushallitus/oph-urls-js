@@ -57,6 +57,7 @@
                 urlsFN.addOverrides = scope.addOverrides
                 urlsFN.addProperties = scope.addProperties
                 urlsFN.addDefaults = scope.addDefaults
+                urlsFN.addCallerId = scope.addCallerId
                 urlsFN.load = scope.load
             }
         }
@@ -89,6 +90,7 @@
             defaults: {},
             omitEmptyValuesFromQuerystring: false,
             encode: true,
+            callerId: undefined,
             name: name
         }
 
@@ -194,6 +196,10 @@
             mergePropertiesWithWarning(props, scopeConfig.defaults)
             return ret
         }
+        ret.addCallerId = function (callerId) {
+            scopeConfig.callerId = callerId
+            return ret
+        }
         ret.load = function () {
             // parse arguments from strings and maps: "url", {overrides: ["", ""], properties: "", defaults}
             var overridesUrls = [], propertiesUrls=[], defaultsUrls=[]
@@ -231,9 +237,9 @@
                 logError("failed to load json files. scope:", scopeConfig.name, err)
                 p.reject(err)
             })
-            overridesUrls = loadUrls(overridesUrls, counterP)
-            propertiesUrls = loadUrls(propertiesUrls, counterP)
-            defaultsUrls = loadUrls(defaultsUrls, counterP)
+            overridesUrls = loadUrls(overridesUrls, counterP, scopeConfig.callerId)
+            propertiesUrls = loadUrls(propertiesUrls, counterP, scopeConfig.callerId)
+            defaultsUrls = loadUrls(defaultsUrls, counterP, scopeConfig.callerId)
 
             return p
         }
@@ -245,6 +251,7 @@
             merge(scopeConfig.defaults, conf.defaults)
             conf.omitEmptyValuesFromQuerystring = scopeConfig.omitEmptyValuesFromQuerystring
             conf.encode = scopeConfig.encode
+            conf.callerId = scopeConfig.callerId
             return newScope;
         }
 
@@ -291,9 +298,12 @@
 
     // ajax loading
 
-    function ajaxJson(method, url, onload, onerror) {
+    function ajaxJson(method, url, onload, onerror, callerId) {
         var oReq = new XMLHttpRequest();
         oReq.open(method, url, true);
+        if (callerId !== undefined) {
+            oReq.setRequestHeader('Caller-Id', callerId)
+        }
         oReq.onreadystatechange = function() {
             if (oReq.readyState == 4) {
                 if(oReq.status == 200) {
@@ -385,13 +395,13 @@
         }
     }
 
-    function loadUrls(urls, promise) {
+    function loadUrls(urls, promise, callerId) {
         return urls.map(function (url) {
             var ret = {url: url};
             ajaxJson("GET", url, function (data) {
                 ret.json = data
                 promise.fulfill()
-            }, promise.reject)
+            }, promise.reject, callerId)
             return ret
         });
     }
