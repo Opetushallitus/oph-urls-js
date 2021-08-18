@@ -1,6 +1,6 @@
 {
   "name": "oph-urls-js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "NPM package containing JavaScript to load and resolve URLs in the browser",
   "main": "oph_urls.js",
   "scripts": {
@@ -15,8 +15,8 @@
   },
   "homepage": "https://github.com/Opetushallitus/oph-urls-js#readme",
   "devDependencies": {
-    "mocha": "^8.0.1",
-    "nock": "^13.0.2",
-    "xhr2": "^0.2.0"
+    "mocha": "^8.3.2",
+    "nock": "^13.0.11",
+    "xhr2": "^0.2.1"
   }
 }
